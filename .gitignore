@@ -1,1 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+*.egg-info/
+
+# IDE
+.ipynb_checkpoints/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test outputs
+test_results/*.png
+
+# Docs
 docs/
+
+# OS
+.DS_Store
+Thumbs.db

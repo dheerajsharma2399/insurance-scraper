@@ -1,14 +1,3 @@
-"""
-Insurance Document Financial Field Parser
-==========================================
-
-A hybrid pattern-based parser for extracting financial fields from insurance documents.
-Supports mixed document types: Life, Health, Property/Auto insurance.
-
-Author: [Your Name]
-Date: February 2026
-"""
-
 import re
 import json
 from datetime import datetime
@@ -20,7 +9,6 @@ from pathlib import Path
 
 @dataclass
 class ExtractedField:
-    """Represents a single extracted financial field"""
     value: Any
     confidence: float
     page: int
@@ -33,273 +21,216 @@ class ExtractedField:
 
 @dataclass
 class ExtractionResult:
-    """Container for complete extraction results"""
     document_metadata: Dict[str, Any]
     fields: Dict[str, ExtractedField]
     tables_extracted: List[Dict[str, Any]]
     warnings: List[str]
     
     def to_dict(self):
-        result = {
+        return {
             'document_metadata': self.document_metadata,
             'fields': {k: v.to_dict() for k, v in self.fields.items()},
             'tables_extracted': self.tables_extracted,
             'warnings': self.warnings
         }
-        return result
     
     def to_json(self, indent=2):
         return json.dumps(self.to_dict(), indent=indent, default=str)
 
 
-class FinancialPatternMatcher:
-    """Pattern matching engine for financial data"""
+class PatternMatcher:
+    """Extract financial data using regex patterns"""
     
-    # Currency patterns
     CURRENCY_PATTERNS = [
-        r'₹\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',  # ₹1,00,000.00
-        r'Rs\.?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',  # Rs. 100000
-        r'INR\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)',  # INR 100000
-        r'\b(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s*(?:/-|only)',  # 100000/- or only
+        r'₹\s*(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?)',
+        r'Rs\.?\s*(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?)',
+        r'INR\s*(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?)',
+        r'₹\s*(\d+(?:\.\d{1,2})?)',
+        r'Rs\.?\s*(\d+(?:\.\d{1,2})?)',
+        r'\b(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?)\s*(?:/-|only)',
     ]
     
-    # Date patterns
     DATE_PATTERNS = [
-        r'(\d{2}[-/]\d{2}[-/]\d{4})',  # DD-MM-YYYY or DD/MM/YYYY
-        r'(\d{2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})',  # DD Mon YYYY
-        r'(\d{4}[-/]\d{2}[-/]\d{2})',  # YYYY-MM-DD
+        r'(\d{2}[-/]\d{2}[-/]\d{4})',
+        r'(\d{2}[-\s](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[-\s]\d{4})',
+        r'(\d{4}[-/]\d{2}[-/]\d{2})',
+        r'(\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})',
     ]
     
-    # Policy number patterns
-    POLICY_NUMBER_PATTERNS = [
-        r'Policy\s*(?:No\.?|Number|#)\s*:?\s*([A-Z0-9/-]{6,20})',
-        r'\b([A-Z]{2,4}[-/]\d{6,12})\b',
+    POLICY_PERIOD = r'(\d{2}[-\s][A-Z]{3}[-\s]\d{4})\s+[Tt]o\s+(\d{2}[-\s][A-Z]{3}[-\s]\d{4})'
+    
+    POLICY_NUMBERS = [
+        r'(?:Policy|Certificate)\s*(?:No\.?|Number|#)\s*:?\s*([A-Z0-9/-]{6,25})',
+        r'(?:Previous\s+)?Policy\s+No\.?\s*:?\s*(\d{10,20})',
+        r'\b([A-Z]{2,4}[-/]\d{6,15})\b',
     ]
     
-    # Percentage patterns
-    PERCENTAGE_PATTERNS = [
-        r'(\d{1,3}(?:\.\d{1,2})?)\s*%',
+    VEHICLE_REG = [r'\b([A-Z]{2}[-\s]?\d{1,2}[-\s]?[A-Z]{1,2}[-\s]?\d{4})\b']
+    
+    IDV = [
+        r'(?:IDV|Insured Declared Value|Vehicle Value)\s*:?\s*₹?\s*(\d{1,3}(?:,\d{3})+)',
+        r'EX[-\s]?SHOWROOM\s+PRICE\s*:?\s*₹?\s*(\d{1,3}(?:,\d{3})+)',
     ]
     
     @staticmethod
-    def extract_currency(text: str) -> List[Tuple[float, str]]:
-        """Extract all currency values from text"""
-        results = []
-        for pattern in FinancialPatternMatcher.CURRENCY_PATTERNS:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                value_str = match.group(1).replace(',', '')
+    def _extract_with_context(text, patterns, value_parser=None):
+        results, seen = [], set()
+        for pattern in patterns:
+            for match in re.finditer(pattern, text, re.IGNORECASE):
                 try:
-                    value = float(value_str)
-                    context = text[max(0, match.start()-50):min(len(text), match.end()+50)]
-                    results.append((value, context))
-                except ValueError:
+                    value = match.group(1).strip()
+                    if value_parser:
+                        value = value_parser(value)
+                    
+                    start = max(0, match.start() - 60)
+                    end = min(len(text), match.end() + 60)
+                    context = text[start:end].strip()
+                    
+                    key = (value, match.start())
+                    if key not in seen:
+                        results.append((value, context))
+                        seen.add(key)
+                except (ValueError, IndexError):
                     continue
         return results
     
-    @staticmethod
-    def extract_dates(text: str) -> List[Tuple[str, str]]:
-        """Extract all dates from text"""
-        results = []
-        for pattern in FinancialPatternMatcher.DATE_PATTERNS:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                date_str = match.group(1)
-                context = text[max(0, match.start()-30):min(len(text), match.end()+30)]
-                results.append((date_str, context))
-        return results
+    @classmethod
+    def extract_currency(cls, text):
+        def parse(v):
+            val = float(v.replace(',', ''))
+            return val if val >= 1 else None
+        return [(v, c) for v, c in cls._extract_with_context(text, cls.CURRENCY_PATTERNS, parse) if v]
     
-    @staticmethod
-    def extract_policy_numbers(text: str) -> List[Tuple[str, str]]:
-        """Extract policy numbers from text"""
-        results = []
-        for pattern in FinancialPatternMatcher.POLICY_NUMBER_PATTERNS:
-            matches = re.finditer(pattern, text, re.IGNORECASE)
-            for match in matches:
-                policy_num = match.group(1)
-                context = text[max(0, match.start()-30):min(len(text), match.end()+30)]
-                results.append((policy_num, context))
-        return results
+    @classmethod
+    def extract_dates(cls, text):
+        return cls._extract_with_context(text, cls.DATE_PATTERNS)
     
-    @staticmethod
-    def extract_percentages(text: str) -> List[Tuple[float, str]]:
-        """Extract percentage values from text"""
-        results = []
-        for pattern in FinancialPatternMatcher.PERCENTAGE_PATTERNS:
-            matches = re.finditer(pattern, text)
-            for match in matches:
-                try:
-                    value = float(match.group(1))
-                    context = text[max(0, match.start()-30):min(len(text), match.end()+30)]
-                    results.append((value, context))
-                except ValueError:
-                    continue
-        return results
+    @classmethod
+    def extract_policy_numbers(cls, text):
+        return cls._extract_with_context(text, cls.POLICY_NUMBERS)
+    
+    @classmethod
+    def extract_percentages(cls, text):
+        return cls._extract_with_context(text, [r'(\d{1,3}(?:\.\d{1,2})?)\s*%'], float)
+    
+    @classmethod
+    def extract_vehicle_registration(cls, text):
+        return cls._extract_with_context(text, cls.VEHICLE_REG)
+    
+    @classmethod
+    def extract_idv(cls, text):
+        def parse(v):
+            return float(v.replace(',', ''))
+        return cls._extract_with_context(text, cls.IDV, parse)
+    
+    @classmethod
+    def extract_policy_period(cls, text):
+        match = re.search(cls.POLICY_PERIOD, text, re.IGNORECASE)
+        if match:
+            start, end = match.group(1).strip(), match.group(2).strip()
+            ctx_start = max(0, match.start() - 40)
+            ctx_end = min(len(text), match.end() + 40)
+            return (start, end, text[ctx_start:ctx_end].strip())
+        return None
 
 
 class ContextMatcher:
-    """Match extracted values to specific fields using context keywords"""
+    """Match values to fields using context keywords"""
     
-    FIELD_KEYWORDS = {
-        'policy_number': [
-            'policy number', 'policy no', 'policy #', 'certificate number',
-            'certificate no', 'policy id'
-        ],
-        'issue_date': [
-            'issue date', 'date of issue', 'policy issue', 'issued on',
-            'commencement date'
-        ],
-        'effective_date': [
-            'effective date', 'start date', 'commence date', 'from date',
-            'policy start', 'effective from'
-        ],
-        'expiry_date': [
-            'expiry date', 'maturity date', 'end date', 'valid till',
-            'policy expiry', 'expire', 'maturity'
-        ],
-        'annual_premium': [
-            'annual premium', 'yearly premium', 'premium per annum',
-            'total annual premium', 'annualized premium'
-        ],
-        'monthly_premium': [
-            'monthly premium', 'premium per month', 'monthly installment',
-            'per month'
-        ],
-        'total_premium': [
-            'total premium', 'gross premium', 'premium payable',
-            'total amount', 'amount payable'
-        ],
-        'sum_insured': [
-            'sum insured', 'sum assured', 'coverage', 'cover amount',
-            'insured amount', 'face value', 'death benefit', 'coverage limit'
-        ],
-        'deductible': [
-            'deductible', 'own damage', 'copay', 'co-payment', 'co payment',
-            'basic excess'
-        ],
-        'gst_amount': [
-            'gst', 'service tax', 'tax amount', 'goods and services tax',
-            'igst', 'cgst', 'sgst'
-        ],
-        'discount': [
-            'discount', 'rebate', 'deduction', 'ncb', 'no claim bonus'
-        ],
-        'cash_value': [
-            'cash value', 'surrender value', 'maturity benefit',
-            'accumulated value'
-        ],
-        'bonus': [
-            'bonus', 'reversionary bonus', 'terminal bonus', 'additional benefit'
-        ],
+    KEYWORDS = {
+        'policy_number': ['policy number', 'policy no', 'certificate number', 'policy id'],
+        'issue_date': ['issue date', 'date of issue', 'policy issue', 'issued on'],
+        'effective_date': ['effective date', 'start date', 'from date', 'valid from'],
+        'expiry_date': ['expiry date', 'maturity date', 'end date', 'valid till', 'expire'],
+        'annual_premium': ['annual premium', 'yearly premium', 'premium per annum'],
+        'monthly_premium': ['monthly premium', 'premium per month', 'per month'],
+        'total_premium': ['total premium', 'gross premium', 'premium payable', 'amount payable'],
+        'sum_insured': ['sum insured', 'sum assured', 'coverage', 'cover amount', 'face value'],
+        'deductible': ['deductible', 'own damage', 'compulsory deductible', 'voluntary deductible'],
+        'gst_amount': ['gst amount', 'igst', 'cgst', 'sgst', 'service tax', 'tax amount'],
+        'discount': ['discount', 'rebate', 'deduction'],
+        'ncb_discount': ['ncb', 'no claim bonus', 'no claim discount'],
+        'cash_value': ['cash value', 'surrender value', 'maturity benefit'],
+        'bonus': ['bonus', 'reversionary bonus', 'terminal bonus'],
+        'idv': ['idv', 'insured declared value', 'vehicle value', 'market value'],
+        'vehicle_registration': ['registration no', 'reg no', 'vehicle no', 'registration number'],
+        'own_damage_premium': ['own damage premium', 'od premium', 'net own damage'],
+        'third_party_premium': ['third party', 'liability premium', 'tp premium', 'net liability'],
     }
     
-    @staticmethod
-    def match_field(context: str, value: Any) -> Tuple[Optional[str], float]:
-        """
-        Match a value to a field based on surrounding context
-        Returns: (field_name, confidence_score)
-        """
+    @classmethod
+    def match_field(cls, context, value):
         context_lower = context.lower()
+        best_match, best_score = None, 0.0
         
-        best_match = None
-        best_score = 0.0
-        
-        for field_name, keywords in ContextMatcher.FIELD_KEYWORDS.items():
+        for field, keywords in cls.KEYWORDS.items():
             for keyword in keywords:
                 if keyword in context_lower:
-                    # Calculate confidence based on keyword match quality
-                    keyword_position = context_lower.find(keyword)
-                    value_position = len(context) // 2  # Approximate value position
-                    
-                    # Closer keyword = higher confidence
-                    distance = abs(keyword_position - value_position)
-                    proximity_score = max(0, 1 - (distance / len(context)))
-                    
-                    # Longer keyword = more specific = higher confidence
-                    specificity_score = len(keyword) / 30  # Normalized
-                    
-                    score = (proximity_score * 0.6 + specificity_score * 0.4)
+                    pos = context_lower.find(keyword)
+                    proximity = max(0, 1 - (abs(pos - len(context)//2) / len(context)))
+                    specificity = min(1.0, len(keyword) / 25)
+                    score = proximity * 0.6 + specificity * 0.4
                     
                     if score > best_score:
                         best_score = score
-                        best_match = field_name
+                        best_match = field
         
         return best_match, best_score
 
 
-class FieldValidator:
-    """Validate extracted field values"""
+class Validator:
+    """Validate extracted values"""
     
     @staticmethod
-    def validate_currency(value: float, field_name: str) -> Tuple[bool, str]:
-        """Validate currency values are within reasonable ranges"""
+    def validate_currency(value, field_name):
         if value < 0:
-            return False, "Negative value not allowed"
+            return False, "Negative value"
         
-        # Range validation based on field type
-        if 'premium' in field_name:
-            if value < 500 or value > 100000000:
-                return False, f"Premium {value} outside reasonable range (₹500 - ₹1Cr)"
-        elif 'sum_insured' in field_name or 'coverage' in field_name:
-            if value < 10000 or value > 1000000000:
-                return False, f"Coverage {value} outside reasonable range (₹10k - ₹100Cr)"
+        ranges = {
+            'premium': (100, 100000000),
+            'sum_insured': (1000, 10000000000),
+            'coverage': (1000, 10000000000),
+            'idv': (1000, 10000000000),
+            'deductible': (0, 100000),
+        }
+        
+        for key, (min_val, max_val) in ranges.items():
+            if key in field_name and not (min_val <= value <= max_val):
+                return False, f"Value {value} outside range"
         
         return True, ""
     
     @staticmethod
-    def validate_date(date_str: str) -> Tuple[bool, str]:
-        """Validate date format and reasonable range"""
-        # Basic format check - actual date parsing would be more robust
-        date_patterns = [
+    def validate_date(date_str):
+        patterns = [
             r'\d{2}[-/]\d{2}[-/]\d{4}',
-            r'\d{2}\s+\w+\s+\d{4}',
-            r'\d{4}[-/]\d{2}[-/]\d{2}'
+            r'\d{2}[-\s]\w+[-\s]\d{4}',
+            r'\d{4}[-/]\d{2}[-/]\d{2}',
+            r'\d{1,2}(?:st|nd|rd|th)?\s+\w+\s+\d{4}'
         ]
-        
-        if not any(re.match(pattern, date_str) for pattern in date_patterns):
-            return False, "Invalid date format"
-        
-        return True, ""
+        return (True, "") if any(re.match(p, date_str, re.I) for p in patterns) else (False, "Invalid format")
     
     @staticmethod
-    def validate_percentage(value: float) -> Tuple[bool, str]:
-        """Validate percentage values"""
-        if value < 0 or value > 100:
-            return False, f"Percentage {value} outside valid range (0-100)"
-        return True, ""
+    def validate_percentage(value):
+        return (True, "") if 0 <= value <= 100 else (False, f"Value {value} outside 0-100")
 
 
 class InsuranceDocumentParser:
-    """Main parser class for insurance documents"""
+    """Parse insurance PDFs and extract financial fields"""
     
     def __init__(self):
-        self.pattern_matcher = FinancialPatternMatcher()
+        self.pattern_matcher = PatternMatcher()
         self.context_matcher = ContextMatcher()
-        self.validator = FieldValidator()
+        self.validator = Validator()
+    
+    def parse_pdf(self, pdf_path):
+        path = Path(pdf_path)
+        if not path.exists():
+            raise FileNotFoundError(f"PDF not found: {pdf_path}")
         
-    def parse_pdf(self, pdf_path: str) -> ExtractionResult:
-        """
-        Parse a PDF insurance document and extract financial fields
-        
-        Args:
-            pdf_path: Path to the PDF file
-            
-        Returns:
-            ExtractionResult object containing extracted fields and metadata
-        """
-        pdf_path_obj = Path(pdf_path)
-        
-        if not pdf_path_obj.exists():
-            raise FileNotFoundError(f"PDF file not found: {pdf_path}")
-        
-        # Initialize result containers
-        extracted_fields = {}
-        tables_extracted = []
-        warnings = []
-        
-        # Document metadata
+        fields, tables, warnings = {}, [], []
         metadata = {
-            'filename': pdf_path_obj.name,
+            'filename': path.name,
             'extraction_timestamp': datetime.now().isoformat(),
             'pages': 0,
             'document_type': 'unknown'
@@ -309,132 +240,190 @@ class InsuranceDocumentParser:
             with pdfplumber.open(pdf_path) as pdf:
                 metadata['pages'] = len(pdf.pages)
                 
-                # Process each page
                 for page_num, page in enumerate(pdf.pages, 1):
-                    # Extract text
                     text = page.extract_text() or ""
                     
-                    # Process tables
-                    tables = page.extract_tables()
-                    for table in tables:
+                    # Extract tables
+                    for table in page.extract_tables():
                         if table:
                             table_info = self._process_table(table, page_num)
                             if table_info:
-                                tables_extracted.append(table_info)
+                                tables.append(table_info)
+                                table_fields = self._extract_from_table(table_info, page_num)
+                                for fname, fdata in table_fields.items():
+                                    if fname not in fields or fdata.confidence > fields[fname].confidence:
+                                        fields[fname] = fdata
                     
-                    # Extract fields from text
+                    # Extract from text
                     page_fields = self._extract_from_text(text, page_num)
-                    
-                    # Merge fields (keep highest confidence)
-                    for field_name, field_data in page_fields.items():
-                        if field_name not in extracted_fields:
-                            extracted_fields[field_name] = field_data
-                        elif field_data.confidence > extracted_fields[field_name].confidence:
-                            warnings.append(
-                                f"Duplicate field '{field_name}' found - "
-                                f"keeping page {field_data.page} value (higher confidence)"
-                            )
-                            extracted_fields[field_name] = field_data
+                    for fname, fdata in page_fields.items():
+                        if fname not in fields:
+                            fields[fname] = fdata
+                        elif fdata.confidence > fields[fname].confidence:
+                            warnings.append(f"Duplicate '{fname}' - keeping page {fdata.page} (higher confidence)")
+                            fields[fname] = fdata
                 
-                # Classify document type based on extracted fields
-                metadata['document_type'] = self._classify_document_type(extracted_fields)
-                
-        except Exception as e:
-            warnings.append(f"Error processing PDF: {str(e)}")
+                metadata['document_type'] = self._classify_document(fields)
         
-        return ExtractionResult(
-            document_metadata=metadata,
-            fields=extracted_fields,
-            tables_extracted=tables_extracted,
-            warnings=warnings
-        )
+        except Exception as e:
+            warnings.append(f"Error: {str(e)}")
+        
+        return ExtractionResult(metadata, fields, tables, warnings)
     
-    def _extract_from_text(self, text: str, page_num: int) -> Dict[str, ExtractedField]:
-        """Extract fields from page text"""
+    def _extract_from_text(self, text, page_num):
         fields = {}
         
-        # Extract policy numbers
-        policy_numbers = self.pattern_matcher.extract_policy_numbers(text)
-        for policy_num, context in policy_numbers:
-            field_name, context_score = self.context_matcher.match_field(context, policy_num)
-            if field_name == 'policy_number' or not field_name:
-                confidence = 0.8 + (context_score * 0.2)  # Base 0.8 for policy number match
-                fields['policy_number'] = ExtractedField(
-                    value=policy_num,
-                    confidence=confidence,
-                    page=page_num,
-                    context=context.strip()
-                )
-                break  # Take first match
+        # Policy period
+        period = self.pattern_matcher.extract_policy_period(text)
+        if period:
+            start, end, ctx = period
+            fields['effective_date'] = ExtractedField(start, 0.92, page_num, ctx[:150])
+            fields['expiry_date'] = ExtractedField(end, 0.92, page_num, ctx[:150])
         
-        # Extract dates
-        dates = self.pattern_matcher.extract_dates(text)
-        for date_str, context in dates:
-            field_name, context_score = self.context_matcher.match_field(context, date_str)
-            if field_name and field_name.endswith('_date'):
-                is_valid, error_msg = self.validator.validate_date(date_str)
-                confidence = context_score * (0.9 if is_valid else 0.5)
-                
-                if field_name not in fields or confidence > fields[field_name].confidence:
-                    fields[field_name] = ExtractedField(
-                        value=date_str,
-                        confidence=confidence,
-                        page=page_num,
-                        context=context.strip()
-                    )
+        # Policy numbers
+        for num, ctx in self.pattern_matcher.extract_policy_numbers(text):
+            fname, score = self.context_matcher.match_field(ctx, num)
+            if fname == 'policy_number' or not fname:
+                fields['policy_number'] = ExtractedField(num, 0.85 + score * 0.15, page_num, ctx[:150])
+                break
         
-        # Extract currency values
-        currency_values = self.pattern_matcher.extract_currency(text)
-        for value, context in currency_values:
-            field_name, context_score = self.context_matcher.match_field(context, value)
-            
-            if field_name and context_score > 0.3:  # Minimum threshold
-                is_valid, error_msg = self.validator.validate_currency(value, field_name)
-                
-                # Calculate final confidence
-                pattern_score = 0.4
-                validation_score = 0.1 if is_valid else 0.0
-                confidence = min(1.0, pattern_score + context_score * 0.5 + validation_score)
-                
-                if field_name not in fields or confidence > fields[field_name].confidence:
-                    fields[field_name] = ExtractedField(
-                        value=value,
-                        confidence=confidence,
-                        page=page_num,
-                        context=context.strip()
-                    )
+        # Dates
+        for date, ctx in self.pattern_matcher.extract_dates(text):
+            fname, score = self.context_matcher.match_field(ctx, date)
+            if fname and fname.endswith('_date') and fname not in fields:
+                valid, _ = self.validator.validate_date(date)
+                conf = score * (0.95 if valid else 0.5)
+                if conf > 0.4:
+                    fields[fname] = ExtractedField(date, conf, page_num, ctx[:150])
         
-        # Extract percentages
-        percentages = self.pattern_matcher.extract_percentages(text)
-        for value, context in percentages:
-            field_name, context_score = self.context_matcher.match_field(context, value)
-            
-            if field_name and context_score > 0.4:
-                is_valid, error_msg = self.validator.validate_percentage(value)
-                confidence = context_score * (0.9 if is_valid else 0.5)
-                
-                if field_name not in fields or confidence > fields[field_name].confidence:
-                    fields[field_name] = ExtractedField(
-                        value=value,
-                        confidence=confidence,
-                        page=page_num,
-                        context=context.strip()
-                    )
+        # Currency
+        for value, ctx in self.pattern_matcher.extract_currency(text):
+            fname, score = self.context_matcher.match_field(ctx, value)
+            if fname and score > 0.35:
+                valid, _ = self.validator.validate_currency(value, fname)
+                if 'gst' in fname and value < 50:
+                    continue
+                conf = min(1.0, 0.4 + score * 0.5 + (0.1 if valid else 0))
+                if conf > 0.5 and (fname not in fields or conf > fields[fname].confidence):
+                    fields[fname] = ExtractedField(value, conf, page_num, ctx[:150])
+        
+        # Percentages
+        for value, ctx in self.pattern_matcher.extract_percentages(text):
+            fname, score = self.context_matcher.match_field(ctx, value)
+            if fname and score > 0.45:
+                valid, _ = self.validator.validate_percentage(value)
+                conf = score * (0.9 if valid else 0.5)
+                if conf > 0.5 and (fname not in fields or conf > fields[fname].confidence):
+                    fields[fname] = ExtractedField(value, conf, page_num, ctx[:150])
+        
+        # Vehicle registration
+        for reg, ctx in self.pattern_matcher.extract_vehicle_registration(text):
+            fname, score = self.context_matcher.match_field(ctx, reg)
+            if fname == 'vehicle_registration' or score > 0.3:
+                fields['vehicle_registration'] = ExtractedField(reg, 0.8 + score * 0.2, page_num, ctx[:150])
+                break
+        
+        # IDV
+        for value, ctx in self.pattern_matcher.extract_idv(text):
+            if value > 10000:
+                fields['idv'] = ExtractedField(value, 0.88, page_num, ctx[:150])
+                break
         
         return fields
     
-    def _process_table(self, table: List[List[str]], page_num: int) -> Optional[Dict[str, Any]]:
-        """Process a table and extract structured financial data"""
+    def _extract_from_table(self, table_info, page_num):
+        fields = {}
+        if table_info['table_type'] != 'premium_breakdown':
+            return fields
+        
+        for row in table_info['rows']:
+            if not row:
+                continue
+            
+            row_text = ' '.join([str(c) if c else '' for c in row])
+            row_lower = row_text.lower()
+            
+            # Total premium
+            if any(k in row_lower for k in ['gross premium paid', 'total premium paid', 'premium paid']):
+                nums = re.findall(r'(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)', row_text)
+                if nums:
+                    try:
+                        val = float(nums[-1].replace(',', ''))
+                        if val > 500:
+                            fields['total_premium'] = ExtractedField(val, 0.93, page_num, f"From table: {row_text[:100]}")
+                    except ValueError:
+                        pass
+            
+            # Net premium
+            elif 'net premium' in row_lower or 'total premium' in row_lower:
+                if 'total_premium' not in fields:
+                    nums = re.findall(r'(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)', row_text)
+                    if nums:
+                        try:
+                            val = float(nums[-1].replace(',', ''))
+                            if val > 500:
+                                fields['total_premium'] = ExtractedField(val, 0.88, page_num, f"From table: {row_text[:100]}")
+                        except ValueError:
+                            pass
+            
+            # GST
+            if 'igst' in row_lower or ('gst' in row_lower and '(' in row_text):
+                nums = re.findall(r'(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)', row_text)
+                if nums:
+                    try:
+                        vals = [float(n.replace(',', '')) for n in nums]
+                        val = max(vals)
+                        if val > 50:
+                            fields['gst_amount'] = ExtractedField(val, 0.90, page_num, f"From table: {row_text[:100]}")
+                    except ValueError:
+                        pass
+            
+            # NCB
+            if 'no claim bonus' in row_lower or ('ncb' in row_lower and '(' in row_text):
+                nums = re.findall(r'(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)', row_text)
+                if nums:
+                    try:
+                        val = float(nums[-1].replace(',', ''))
+                        if val >= 0:
+                            fields['ncb_discount'] = ExtractedField(val, 0.87, page_num, f"From table: {row_text[:100]}")
+                    except ValueError:
+                        pass
+            
+            # OD Premium
+            if 'net own damage' in row_lower or 'own damage premium' in row_lower:
+                nums = re.findall(r'(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)', row_text)
+                if nums:
+                    try:
+                        val = float(nums[-1].replace(',', ''))
+                        if val > 100:
+                            fields['own_damage_premium'] = ExtractedField(val, 0.89, page_num, f"From table: {row_text[:100]}")
+                    except ValueError:
+                        pass
+            
+            # TP Premium
+            if 'net liability' in row_lower or 'liability premium' in row_lower:
+                nums = re.findall(r'(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)', row_text)
+                if nums:
+                    try:
+                        val = float(nums[-1].replace(',', ''))
+                        if val > 100:
+                            fields['third_party_premium'] = ExtractedField(val, 0.89, page_num, f"From table: {row_text[:100]}")
+                    except ValueError:
+                        pass
+        
+        return fields
+    
+    def _process_table(self, table, page_num):
         if not table or len(table) < 2:
             return None
         
-        # Assume first row is header
-        headers = [str(cell).lower().strip() if cell else "" for cell in table[0]]
+        headers = [str(c).lower().strip() if c else "" for c in table[0]]
+        keywords = ['premium', 'amount', 'coverage', 'sum', 'total', 'benefit', 'gst', 'tax']
         
-        # Check if this looks like a financial table
-        financial_keywords = ['premium', 'amount', 'coverage', 'sum', 'total', 'benefit']
-        if not any(keyword in ' '.join(headers) for keyword in financial_keywords):
-            return None
+        if not any(k in ' '.join(headers) for k in keywords):
+            table_text = ' '.join([' '.join([str(c) if c else '' for c in r]) for r in table])
+            if not any(k in table_text.lower() for k in keywords):
+                return None
         
         table_data = {
             'page': page_num,
@@ -443,85 +432,45 @@ class InsuranceDocumentParser:
             'table_type': 'financial_data'
         }
         
-        # Try to identify table type
-        if 'premium' in ' '.join(headers):
+        header_text = ' '.join(headers).lower()
+        if 'premium' in header_text:
             table_data['table_type'] = 'premium_breakdown'
-        elif 'coverage' in ' '.join(headers) or 'benefit' in ' '.join(headers):
+        elif 'coverage' in header_text or 'benefit' in header_text:
             table_data['table_type'] = 'coverage_details'
         
         return table_data
     
-    def _classify_document_type(self, fields: Dict[str, ExtractedField]) -> str:
-        """Classify insurance document type based on extracted fields"""
+    def _classify_document(self, fields):
         field_names = set(fields.keys())
         
-        life_indicators = {'cash_value', 'bonus', 'maturity_date', 'sum_assured'}
-        health_indicators = {'deductible', 'copay', 'room_rent'}
-        auto_indicators = {'idv', 'ncb', 'depreciation'}
-        
-        life_score = len(field_names & life_indicators)
-        health_score = len(field_names & health_indicators)
-        auto_score = len(field_names & auto_indicators)
-        
-        if life_score >= health_score and life_score >= auto_score and life_score > 0:
-            return 'life_insurance'
-        elif health_score >= auto_score and health_score > 0:
-            return 'health_insurance'
-        elif auto_score > 0:
+        if any(f in field_names for f in ['vehicle_registration', 'idv', 'own_damage_premium']):
             return 'auto_insurance'
-        else:
-            return 'general_insurance'
-
-
-def main():
-    """Example usage"""
-    parser = InsuranceDocumentParser()
-    
-    # Example: Parse a PDF file
-    pdf_path = "sample_insurance_document.pdf"
-    
-    try:
-        result = parser.parse_pdf(pdf_path)
+        elif any(f in field_names for f in ['sum_insured', 'cash_value', 'bonus']):
+            return 'life_insurance'
+        elif 'deductible' in field_names:
+            return 'health_insurance'
         
-        # Print results
-        print("=" * 70)
-        print("EXTRACTION RESULTS")
-        print("=" * 70)
-        print(f"\nDocument: {result.document_metadata['filename']}")
-        print(f"Pages: {result.document_metadata['pages']}")
-        print(f"Document Type: {result.document_metadata['document_type']}")
-        print(f"\nExtracted Fields ({len(result.fields)}):")
-        print("-" * 70)
-        
-        for field_name, field_data in sorted(result.fields.items()):
-            print(f"\n{field_name.upper().replace('_', ' ')}:")
-            print(f"  Value: {field_data.value}")
-            print(f"  Confidence: {field_data.confidence:.2f}")
-            print(f"  Page: {field_data.page}")
-            print(f"  Context: {field_data.context[:100]}...")
-        
-        if result.tables_extracted:
-            print(f"\n\nTables Found: {len(result.tables_extracted)}")
-            for i, table in enumerate(result.tables_extracted, 1):
-                print(f"\n  Table {i} (Page {table['page']}): {table['table_type']}")
-        
-        if result.warnings:
-            print("\n\nWarnings:")
-            for warning in result.warnings:
-                print(f"  ⚠ {warning}")
-        
-        # Save to JSON
-        output_path = pdf_path.replace('.pdf', '_extracted.json')
-        with open(output_path, 'w') as f:
-            f.write(result.to_json())
-        print(f"\n\n✓ Results saved to: {output_path}")
-        
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
-        print("\nPlease provide a valid PDF file path.")
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        return 'unknown'
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    
+    if len(sys.argv) < 2:
+        print("Usage: python insurance_parser.py <pdf_file>")
+        sys.exit(1)
+    
+    parser = InsuranceDocumentParser()
+    result = parser.parse_pdf(sys.argv[1])
+    
+    print(f"\nExtracted {len(result.fields)} fields from {result.document_metadata['filename']}")
+    print(f"Document type: {result.document_metadata['document_type']}")
+    print(f"\nFields:")
+    for name, field in sorted(result.fields.items()):
+        print(f"  {name}: {field.value} (confidence: {field.confidence:.0%})")
+    
+    # Save to JSON
+    output_file = Path(sys.argv[1]).stem + "_results.json"
+    with open(output_file, 'w') as f:
+        f.write(result.to_json())
+    print(f"\nSaved results to {output_file}")

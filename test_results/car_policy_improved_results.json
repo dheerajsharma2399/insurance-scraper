@@ -1,0 +1,350 @@
+{
+  "document_metadata": {
+    "filename": "car policy.pdf",
+    "extraction_timestamp": "2026-02-07T03:43:35.625497",
+    "pages": 6,
+    "document_type": "auto_insurance"
+  },
+  "fields": {
+    "effective_date": {
+      "value": "17-JAN-2025",
+      "confidence": 0.92,
+      "page": 1,
+      "context": "1\nPrevious Policy No. : 224870007300000 17-JAN-2025 To 16-JAN-2026\nBROKER DETAILS\nIRDA Lic. No. 375 CIN No",
+      "coordinates": null
+    },
+    "expiry_date": {
+      "value": "16-JAN-2026",
+      "confidence": 0.92,
+      "page": 1,
+      "context": "1\nPrevious Policy No. : 224870007300000 17-JAN-2025 To 16-JAN-2026\nBROKER DETAILS\nIRDA Lic. No. 375 CIN No",
+      "coordinates": null
+    },
+    "policy_number": {
+      "value": "224870007300000",
+      "confidence": 0.9530864864864864,
+      "page": 1,
+      "context": "surer : LVGI\nUTTAR PRADESH (State Code:09) -201001\nPrevious Policy No. : 224870007300000 17-JAN-2025 To 16-JAN-2026\nBROKER DETAILS\nIRDA Lic. No. 375",
+      "coordinates": null
+    },
+    "issue_date": {
+      "value": "04-JAN-2026",
+      "confidence": 0.6479725190839694,
+      "page": 2,
+      "context": "EHICLE RULES, 1989)\nPolicy No. : D245730 Policy Issued On : 04-JAN-2026 (16:33)\nInsured Name : MR. PRASHANT SHARMA\nOwn Damage Perio",
+      "coordinates": null
+    },
+    "vehicle_registration": {
+      "value": "UP 44 BQ 1289",
+      "confidence": 0.8750545454545455,
+      "page": 1,
+      "context": "Invoice Date Engine/Motor No. Chassis No.\nMAT6MLA00422\nSUV UP 44 BQ 1289 GHAZIABAD 05-JAN-2021 REVTRNKA1148\nNon-Elec.\nVehicle IDV CN",
+      "coordinates": null
+    },
+    "ncb_discount": {
+      "value": 262.0,
+      "confidence": 0.87,
+      "page": 2,
+      "context": "From table: CNG/LPG Kit (IMT-25) 0 No Claim Bonus (20%) 262",
+      "coordinates": null
+    },
+    "own_damage_premium": {
+      "value": 3853.0,
+      "confidence": 0.89,
+      "page": 2,
+      "context": "From table: Sub Total-Addition 4,148 Net Own Damage Premium (A) 3,853",
+      "coordinates": null
+    },
+    "gst_amount": {
+      "value": 143.0,
+      "confidence": 0.9,
+      "page": 2,
+      "context": "From table:   IGST (18%) 1438",
+      "coordinates": null
+    },
+    "deductible": {
+      "value": 1000.0,
+      "confidence": 0.9018582677165354,
+      "page": 2,
+      "context": "%) 1438\n> The policy is subject to compulsory deductible of Rs.1000 (IMT-22)\n> The insurance company will display terms & condi",
+      "coordinates": null
+    },
+    "discount": {
+      "value": 0.0,
+      "confidence": 0.6065114754098361,
+      "page": 2,
+      "context": ") 262\nSub Total (Basic Premium) 1,343 Handicapped Discount (0%) 0\nGeographical Area Extension (IMT-1) 0 Sub Total (Deducti",
+      "coordinates": null
+    }
+  },
+  "tables_extracted": [
+    {
+      "page": 1,
+      "headers": [
+        "Make",
+        "Model",
+        "Variant",
+        "Cubic Capacity",
+        "Manufacturing Year",
+        "Seating capacity"
+      ],
+      "rows": [
+        [
+          "TATA MOTORS",
+          "NEXON",
+          "NEXON XE 1.2L BS6",
+          "1199",
+          "2021",
+          "5"
+        ],
+        [
+          "Body Type",
+          "Registration No.",
+          "RTO",
+          "Invoice Date",
+          "Engine/Motor No.",
+          "Chassis No."
+        ],
+        [
+          "SUV",
+          "UP 44 BQ 1289",
+          "GHAZIABAD",
+          "05-JAN-2021",
+          "REVTRNKA1148",
+          "MAT6MLA00422"
+        ],
+        [
+          "Vehicle IDV",
+          "CNG/LPG Kit",
+          "Elec. Accessories",
+          "Non-Elec.\nAccessories",
+          "Total IDV",
+          ""
+        ],
+        [
+          "400,950",
+          "0",
+          "0",
+          "0",
+          "400,950",
+          ""
+        ]
+      ],
+      "table_type": "financial_data"
+    },
+    {
+      "page": 1,
+      "headers": [
+        "Premium Paid : 9432",
+        "Cheque No. : 1142048294",
+        "Cheque Date: 04-JAN-2026"
+      ],
+      "rows": [
+        [
+          "Bank Name : NON CUG HDFC CCAVENUE",
+          null,
+          "Bank City :"
+        ]
+      ],
+      "table_type": "premium_breakdown"
+    },
+    {
+      "page": 2,
+      "headers": [
+        "Own Damage Premium (A)",
+        null,
+        null,
+        null
+      ],
+      "rows": [
+        [
+          "Basic Premium",
+          null,
+          "Deductibles",
+          null
+        ],
+        [
+          "Vehicle",
+          "1,343",
+          "Voluntary Deductibles (0) (IMT-22A)",
+          "0"
+        ],
+        [
+          "Non-Elec. Accessories",
+          "0",
+          "Anti Theft Device (IMT-10)",
+          "33"
+        ],
+        [
+          "Elec. Accessories (IMT-24)",
+          "0",
+          "AA Membership (IMT-8)",
+          "0"
+        ],
+        [
+          "CNG/LPG Kit (IMT-25)",
+          "0",
+          "No Claim Bonus (20%)",
+          "262"
+        ],
+        [
+          "Sub Total (Basic Premium)",
+          "1,343",
+          "Handicapped Discount (0%)",
+          "0"
+        ],
+        [
+          "Geographical Area Extension (IMT-1)",
+          "0",
+          "Sub Total (Deductibles)",
+          "295"
+        ],
+        [
+          "IMT 23 Premium",
+          "0",
+          "",
+          ""
+        ],
+        [
+          "Add On Coverages",
+          "2805",
+          "",
+          ""
+        ],
+        [
+          "Sub Total-Addition",
+          "4,148",
+          "Net Own Damage Premium (A)",
+          "3,853"
+        ],
+        [
+          "Liability Premium (B)",
+          null,
+          null,
+          null
+        ],
+        [
+          "Basic Third Party Liability",
+          "3416",
+          "PA Cover For 0 Persons of Rs. 0 Each (IMT-16)",
+          "0"
+        ],
+        [
+          "Third Party Liability For Bi-Fuel Kit",
+          "0",
+          "PA cover for Paid Driver of Rs. 0 (IMT\u201317)",
+          "0"
+        ],
+        [
+          "Third Party Liability For Geographical Area\nExtension",
+          "0",
+          "Legal Liability For Paid Driver (IMT-28)",
+          "50"
+        ],
+        [
+          "PA Cover For Owner Driver Of Rs. 1500000 (IMT-\n15)",
+          "675",
+          "Legal Liability for Employees (for 0 persons) (IMT\u201329)",
+          "0"
+        ],
+        [
+          "",
+          "",
+          "Net Liability Premium (B)",
+          "4141"
+        ],
+        [
+          "",
+          null,
+          null,
+          null
+        ],
+        [
+          "Note: .Warning that in case of dishonour of the premium cheque, this document stands\nautomatically cancelled 'ab-initio\n> Consolidated stamp duty paid to state exchequer.\n> The policy is subject to compulsory deductible of Rs.1000 (IMT-22)\n> The insurance company will display terms & conditions on its website\nhttps://www.godigit.com which can\nbe accessed by you online.\n>Addon Opted: ,\n*Subject to IMT Endt. Nos.& Memorandum:7,22,10,28\nEX-SHOWROOM PRICE : 891000",
+          null,
+          "Total Premium (A+B)",
+          "7994"
+        ],
+        [
+          null,
+          null,
+          "",
+          ""
+        ],
+        [
+          null,
+          null,
+          "IGST (18%)",
+          "1438"
+        ],
+        [
+          null,
+          null,
+          "",
+          ""
+        ],
+        [
+          null,
+          null,
+          "Gross Premium Paid",
+          "9432"
+        ]
+      ],
+      "table_type": "premium_breakdown"
+    },
+    {
+      "page": 2,
+      "headers": [
+        "Addon Unique Identification Number (UIN) Details",
+        null,
+        "Add On Premium"
+      ],
+      "rows": [
+        [
+          "Consumables",
+          "IRDAN158RP0005V01201718/A0008V01201718",
+          "400"
+        ],
+        [
+          "Nil / Zero Depreciation",
+          "IRDAN158RP0005V01201718/A0009V01201718",
+          "2405"
+        ]
+      ],
+      "table_type": "premium_breakdown"
+    },
+    {
+      "page": 3,
+      "headers": [
+        "LIMITATIONS AS TO\nUSE",
+        "The policy covers use of the vehicle for any purpose other than (1) Hire or Reward (2) Carriage of\ngoods (other than samples or personal luggage) (3) Organized racing (4) Pace making (5) Speed\ntesting (6) Reliability trials (7) Any purpose in connection with motor trade."
+      ],
+      "rows": [
+        [
+          "DRIVER\u2019S CLAUSE",
+          "Any person including the insured: Provided that the person driving holds an effective driving license\nat the time of the accident and is not disqualified from holding or obtaining such license. Provided\nalso that the person holding an effective learners license may also drive the vehicle & that such a\nperson satisfies the requirements of Rule 3 of the Central Motor Vehicle Rules, 1989."
+        ],
+        [
+          "LIMITS OF LIABILITY\nCLAUSE",
+          "Under Section II-1(i) of the policy-Death of or bodily injury: Such amount as is necessary to meet the\nrequirements of the Motor Vehicle Act 1988.Under Section II-1 (ii) of the policy-Damage to third\nparty property is Rs.7.5lakhs PA Cover Under Section III for Owner-Driver is Rs. 1500000"
+        ],
+        [
+          "NCB Clause",
+          "The insured is entitled for a No Claim Bonus (NCB) on the own damage section of the policy, if no\nclaim is\nmade or pending during the preceding year(s)-20%, preceding two consecutive years-25%, preceding\nthree consecutive\nyears-35%, preceding four consecutive years-45%, preceding five consecutive years-50% of NCB on\nOD Premium. NCB is\nallowed provided the policy is renewed within 90 days of the expiry date of the previous policy."
+        ],
+        [
+          "IMPORTANT NOTICE",
+          "The insured is not indemnified if the vehicle is used or driven otherwise than in accordance with the\nschedule. Any payment made by the company by reasons of wider terms appearing in the certificate\nin order to comply with the Motor Vehicle Act, 1988 is recoverable from the insured. See the clause\nheaded \u201cAVOIDANCE OF CERTAIN TERMS & RIGHT OF RECOVERY\u201d. For legal interpretation English\nversion will hold good."
+        ],
+        [
+          "NOTE",
+          "This Schedule, the attached Policy and Endorsements mentioned herein above shall read together\nand word or expression to which a specific meaning has been attached in any part of this policy or of\nthe Schedule shall bear the same meaning wherever it may appear. Any\namendments/modifications/alterations made on this system generated policy document is not valid\nand Company shall not be liable for any liability whatsoever arising from such changes. Any changes\nrequired to be made in the policy once issued would be valid and effective, only after written request\nis made to the Company and Company accepts the requested amendments/modifications/alterations\nand records the same through separate endorsement to be issued by the company.\nIn Witness whereoff this policy has been signed at GHAZIABAD on 04-JAN-2026 16:33"
+        ]
+      ],
+      "table_type": "financial_data"
+    }
+  ],
+  "warnings": [
+    "Duplicate 'issue_date' - keeping page 2 (higher confidence)"
+  ]
+}

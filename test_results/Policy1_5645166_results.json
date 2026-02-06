@@ -1,0 +1,428 @@
+{
+  "document_metadata": {
+    "filename": "Policy1_5645166.pdf",
+    "extraction_timestamp": "2026-02-07T03:21:00.418611",
+    "pages": 2,
+    "document_type": "auto_insurance"
+  },
+  "fields": {
+    "own_damage_premium": {
+      "value": 19557.0,
+      "confidence": 0.89,
+      "page": 1,
+      "context": "From table: Net Own Damage Premium (A) 12,657 Gross Premium Paid  19,557",
+      "coordinates": null
+    },
+    "third_party_premium": {
+      "value": 3916.0,
+      "confidence": 0.89,
+      "page": 1,
+      "context": "From table: Handicapped Discount (IMT-12) 0 Net Liability Premium (B)  3,916",
+      "coordinates": null
+    },
+    "ncb_discount": {
+      "value": 50.0,
+      "confidence": 0.87,
+      "page": 1,
+      "context": "From table: No Claim Bonus (0%) 0 Sub Total (Legal Liability)  50",
+      "coordinates": null
+    },
+    "total_premium": {
+      "value": 19557.0,
+      "confidence": 0.93,
+      "page": 1,
+      "context": "From table: Net Own Damage Premium (A) 12,657 Gross Premium Paid  19,557",
+      "coordinates": null
+    },
+    "gst_amount": {
+      "value": 658.0,
+      "confidence": 0.9,
+      "page": 1,
+      "context": "From table: Add On Coverages ( ZD ) 6587 CGST(9%)  1492",
+      "coordinates": null
+    },
+    "policy_number": {
+      "value": "3322/02342489/000/00",
+      "confidence": 0.9494378378378379,
+      "page": 1,
+      "context": "IN :U66030TN2001PLC047977 IRDAI Reg:123\nPolicy No: 3322/02342489/000/00 Proposal No. & Date: HIIB194980, 29-NOV",
+      "coordinates": null
+    },
+    "issue_date": {
+      "value": "29-NOV-2025",
+      "confidence": 0.7085538461538461,
+      "page": 1,
+      "context": "000/00 Proposal No. & Date: HIIB194980, 29-NOV-2025\nPolicy Issued On: 01-Dec-2025 12:54 HRS",
+      "coordinates": null
+    },
+    "deductible": {
+      "value": 1000.0,
+      "confidence": 0.91748031496063,
+      "page": 1,
+      "context": "cheque 5.The policy is subject to compulsory deductible of INR 1,000 (IMT-\n22) & Voluntary Deductible of INR 0 .\n6. This policy",
+      "coordinates": null
+    },
+    "discount": {
+      "value": 2.0,
+      "confidence": 0.8176585365853658,
+      "page": 1,
+      "context": "Sub Total (Basic Premium) 6,226 PA cover for Paid Driver of Rs 2 Lac (IMT-17) 0\nDiscount/Deductibles Sub Total PA Cover 450",
+      "coordinates": null
+    },
+    "expiry_date": {
+      "value": "30/05/2028",
+      "confidence": 0.6259325842696629,
+      "page": 2,
+      "context": "to\nExpiry)\nBroker Code: 822 (Valid UPTO:30/05/2028) MISP NAME-ASHVAR AUTOMOBILES\nCIN No.:",
+      "coordinates": null
+    }
+  },
+  "tables_extracted": [
+    {
+      "page": 1,
+      "headers": [
+        "Policy No:",
+        "3322/02342489/000/00",
+        null,
+        null,
+        "Proposal No. & Date:",
+        "HIIB194980, 29-NOV-2025",
+        null,
+        null
+      ],
+      "rows": [
+        [
+          "Policy Issued On:",
+          "01-Dec-2025 12:54 HRS",
+          null,
+          null,
+          "Previous Policy No.:",
+          "3311/01821071/000/00",
+          null,
+          null
+        ],
+        [
+          "Insured Name:",
+          "MR. DHEERAJ SHARMA",
+          null,
+          null,
+          "Previous Insurer:",
+          "Cholamandalam MS General Insurance Co. Ltd.",
+          null,
+          null
+        ],
+        [
+          "Insured Address:",
+          "B - 25436 GOVINDPURAM , GHAZIABAD , UTTAR PRADESH (State\nCode:09) -201009",
+          null,
+          null,
+          "Period of Own Damage :",
+          "02-DEC-2025 (00:00) To 01-DEC-2026 (1 YEAR)",
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          "Period of Liability Cover:",
+          "02-DEC-2025 (00:00) To 01-DEC-2026 (1 YEAR)",
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          "Period of Compulsory\nPersonal Accident Cover:",
+          "02-DEC-2025 (00:00) To 01-DEC-2026 (1 YEAR)",
+          null,
+          null
+        ],
+        [
+          "Customer Details",
+          "Customer Type",
+          "PAN",
+          "GSTIN",
+          "Nominee Details",
+          "Name",
+          "Age (Yr.)",
+          "Relation"
+        ],
+        [
+          null,
+          "INDIVIDUAL",
+          "XXXXX3905B",
+          "NA",
+          null,
+          "Usha SHARMA",
+          "59",
+          "MOTHER"
+        ]
+      ],
+      "table_type": "financial_data"
+    },
+    {
+      "page": 1,
+      "headers": [
+        "Make",
+        "Model",
+        "Variant",
+        "Cubic Capacity",
+        "Manufacturing Year",
+        "Seating capacity"
+      ],
+      "rows": [
+        [
+          "HYUNDAI",
+          "NEW I20 (IB)",
+          "I20 ASTA DUAL TONE VTVT",
+          "1197",
+          "2018",
+          "5"
+        ],
+        [
+          "Body Type",
+          "Registration No.",
+          "RTO",
+          "Hypothecation/Lease*",
+          "Fuel Type",
+          "VIN/Chassis No."
+        ],
+        [
+          "HATCHBACK",
+          "UP 14 DX 2531",
+          "GHAZIABAD",
+          "NO",
+          "PETROL",
+          "MALBO51BLJM626571"
+        ],
+        [
+          "Vehicle IDV",
+          "Electrical Accessories",
+          "Non-Electrical Accessories",
+          "BI Fuel Kit",
+          "Total IDV",
+          "Engine No"
+        ],
+        [
+          "337,760",
+          "0",
+          "0",
+          "0",
+          "337,760",
+          "BALAJM093729"
+        ]
+      ],
+      "table_type": "financial_data"
+    },
+    {
+      "page": 1,
+      "headers": [
+        "Own Damage Premium (A)",
+        "Amount(INR)",
+        "Liability Premium (B)",
+        null,
+        "Amount(INR)"
+      ],
+      "rows": [
+        [
+          "Basic Own Damage Premium",
+          null,
+          "Basic Third Party Liability Premium",
+          null,
+          "3,416"
+        ],
+        [
+          "Vehicle",
+          "6,226",
+          "Bi-Fuel Kit",
+          null,
+          "0"
+        ],
+        [
+          "Non-Elec. Accessories (IMT-24)",
+          "0",
+          "Geographical Area Extension (IMT-1)",
+          null,
+          "0"
+        ],
+        [
+          "Elec. Accessories (IMT-24)",
+          "0",
+          "Sub Total (Third Party Liability)",
+          null,
+          "3,416"
+        ],
+        [
+          "Bi-Fuel Kit (IMT-25)",
+          "0",
+          "Personal Accident (PA) Cover",
+          null,
+          null
+        ],
+        [
+          "Geographical Area Extension (IMT-1)",
+          "0",
+          "Compulsory PA Cover for Owner Driver Rs 1500000 (IMT-15)",
+          null,
+          "450"
+        ],
+        [
+          "IMT 23 Premium",
+          "0",
+          "PA Cover for 0 Unnamed Passengers Rs 0 Each (IMT-16)",
+          null,
+          "0"
+        ],
+        [
+          "Sub Total (Basic Premium)",
+          "6,226",
+          "PA cover for Paid Driver of Rs 2 Lac (IMT-17)",
+          null,
+          "0"
+        ],
+        [
+          "Discount/Deductibles",
+          null,
+          "Sub Total PA Cover",
+          null,
+          "450"
+        ],
+        [
+          "Voluntary Deductibles (0) (IMT-22A)",
+          "0",
+          "Legal Liability",
+          null,
+          null
+        ],
+        [
+          "Anti Theft Device (IMT-10)",
+          "156",
+          "Paid Driver (IMT-28)",
+          null,
+          "50"
+        ],
+        [
+          "AA Membership (IMT-8)",
+          "0",
+          "Employees (for 0 persons) (IMT-29)",
+          null,
+          "0"
+        ],
+        [
+          "No Claim Bonus (0%)",
+          "0",
+          "Sub Total (Legal Liability)",
+          null,
+          "50"
+        ],
+        [
+          "Handicapped Discount (IMT-12)",
+          "0",
+          "Net Liability Premium (B)",
+          null,
+          "3,916"
+        ],
+        [
+          "Sub Total (Deductibles)",
+          "156",
+          "Total Premium (A+B)",
+          null,
+          "16,573"
+        ],
+        [
+          "Total Own Damage Premium",
+          "6,070",
+          "SGST(9%)",
+          null,
+          "1,492"
+        ],
+        [
+          "Add On Coverages ( ZD )",
+          "6587",
+          "CGST(9%)",
+          null,
+          "1492"
+        ],
+        [
+          "Net Own Damage Premium (A)",
+          "12,657",
+          "Gross Premium Paid",
+          null,
+          "19,557"
+        ],
+        [
+          "Add-on Cover Opted in the Policy: Waiver of depreciation(IRDAN123RP0001V01200203/A0003V02200910)",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "Notes: 1. Consolidated Stamp Duty Paid Vide G.O. Rt No.157,Commercial Taxes and Registration (j1) Department, Tamil Nadu dated 28/04/2021",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "2.This policy has been issued upon declaration by the Insured that a valid Pollution Under Control (PUC) Certificate is held on the date of\ncommencement of the Policy. The insured undertakes to renew and maintain a valid and effective PUC and/or fitness Certificate, as applicable,\nduring the subsistence of the Policy.",
+          null,
+          null,
+          "3.Geographical Area Ext. extended to (IMT-1): NA",
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          "5.The policy is subject to compulsory deductible of INR 1,000 (IMT-\n22) & Voluntary Deductible of INR 0 .",
+          null
+        ],
+        [
+          "4. Policy issuance is subject to realization of cheque if premium is paid by cheque",
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          "6. This policy is to be read in conjunction with the Policy /Add-on wordings T&C available on the insurer website\nhttp://www.cholainsurance.com",
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "table_type": "premium_breakdown"
+    },
+    {
+      "page": 2,
+      "headers": [
+        "Insurance Broker Name : Hyundai India Insurance Broking Pvt. Ltd.\nCorporate Office:16th Floor, Building No. 9A, DLF Cybercity, Phase III, Gurugram,\nHaryana 122001",
+        null,
+        "Scan for Renewal\n(Valid from 90 Days Prior to\nExpiry)",
+        "For & On Behalf of\nCholamandalam MS General Insurance Co. Ltd."
+      ],
+      "rows": [
+        [
+          "Broker Code: 822 (Valid UPTO:30/05/2028)\nCIN No.: U67200HR2021PTC098982\nGST: 06AAGCH0310P1ZP\nEmail ID: connect@hiib.in\nContact No: 0124-6833000",
+          "MISP NAME-ASHVAR AUTOMOBILES\nPRIVATE LIMITED\nMISP CODE-HIIB-MHY-0029\nDP NAME-VARUN GUPTA",
+          "",
+          "Authorized Signatory"
+        ],
+        [
+          "For Claims, Policy Servicing & Renewal, Kindly contact (DREAM HYUNDAI) at +91-9560795298",
+          null,
+          null,
+          null
+        ]
+      ],
+      "table_type": "financial_data"
+    }
+  ],
+  "warnings": []
+}
